@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Чат-бот РЖД</title>
+    <link
+      rel="icon"
+      href="{{ url_for('static', path='favicon.ico') }}"
+      type="image/x-icon"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+    <!-- Подключение marked.js для поддержки Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Чат-бот соцподдержки сотрудников</h1>
+        <img src="{{ url_for('static', path='Logo.svg') }}" alt="РЖД" />
+      </div>
+      <h2>Введите 0 чтобы начать.</h2>
+      <div id="chat"></div>
+
+      <div id="input-area">
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Введите сообщение..."
+          onkeydown="if(event.key === 'Enter') sendMessage()"
+        />
+        <button onclick="sendMessage()">Отправить</button>
+      </div>
+    </div>
+
+    <script>
+      function sendMessage() {
+        const input = document.getElementById("user-input");
+        const message = input.value;
+
+        if (message.trim() === "") return;
+
+        const chat = document.getElementById("chat");
+
+        // Сообщение пользователя
+        const userMessage = document.createElement("div");
+        userMessage.classList.add("message", "user");
+        userMessage.innerHTML = `<div class="bubble">${escapeHtml(
+          message
+        )}</div>`;
+        chat.appendChild(userMessage);
+
+        // Отправляем запрос на FastAPI
+        fetch("/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message: message }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // Сообщение бота с рендерингом Markdown
+            const botMessage = document.createElement("div");
+            botMessage.classList.add("message", "bot");
+
+            // Рендеринг Markdown с помощью marked.js
+            const htmlContent = marked.parse(data.response);
+
+            botMessage.innerHTML = `<div class="bubble">🚂 ${htmlContent}</div>`;
+            chat.appendChild(botMessage);
+
+            // Автоматически скроллим вниз
+            chat.scrollTop = chat.scrollHeight;
+          })
+          .catch((error) => console.error("Ошибка:", error));
+
+        input.value = ""; // Очищаем поле ввода
+      }
+
+      // Функция для экранирования HTML, чтобы предотвратить XSS
+      function escapeHtml(text) {
+        const map = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;",
+        };
+        return text.replace(/[&<>"']/g, function (m) {
+          return map[m];
+        });
+      }
+    </script>
+  </body>
+</html>

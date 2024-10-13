@@ -1,0 +1,46 @@
+
+                   SSUUMMMMAARRYY OOFF LLEESSSS CCOOMMMMAANNDDSS
+
+      Commands marked with * may be preceded by a number, _N.
+      Notes in parentheses indicate the behavior if _N is given.
+      A key preceded by a caret indicates the Ctrl key; thus ^K is ctrl-K.
+
+  h  H                 Display this help.
+  q  :q  Q  :Q  ZZ     Exit.
+ ---------------------------------------------------------------------------
+
+                           MMOOVVIINNGG
+
+  e  ^E  j  ^N  CR  *  Forward  one line   (or _N lines).
+  y  ^Y  k  ^K  ^P  *  Backward one line   (or _N lines).
+  f  ^F  ^V  SPACE  *  Forward  one window (or _N lines).
+  b  ^B  ESC-v      *  Backward one window (or _N lines).
+  z                 *  Forward  one window (and set window to _N).
+  w                 *  Backward one window (and set window to _N).
+  ESC-SPACE         *  Forward  one window, but don't stop at end-of-file.
+  d  ^D             *  Forward  one half-window (and set half-window to _N).
+  u  ^U             *  Backward one half-window (and set half-window to _N).
+  ESC-)  RightArrow *  Right one half screen width (or _N positions).
+[33mcommit 37a8eb90ca0dce2381c21c7dad281f6a2ce10bd2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Nadia <gallininadia@gmail.com>
+Date:   Fri Oct 11 23:25:24 2024 +0300
+
+    добавила вебсокеты
+
+[33mcommit 0e67689b654361281f2f445bd69a40c9d1594899[m
+Author: Nadia <gallininadia@gmail.com>
+Date:   Fri Oct 11 23:11:27 2024 +0300
+
+    добавила логику в чат-бот и адаптивность приложения
+
+[33mcommit ac4e6bd98d416360c90fd3d02221c57ca8a5c83b[m
+Author: Nadia <gallininadia@gmail.com>
+Date:   Fri Oct 11 18:57:39 2024 +0300
+
+    добавила разметку текста
+
+[33mcommit 118724e88ddd5d26bb2dbb3aefd7b13d38204117[m
+Author: Nadia <gallininadia@gmail.com>
+Date:   Tue Oct 8 20:36:58 2024 +0300
+
+    first commit

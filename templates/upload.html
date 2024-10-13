@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Загрузка документов - Чат-бот РЖД</title>
+    <link
+      rel="icon"
+      href="{{ url_for('static', path='favicon.ico') }}"
+      type="image/x-icon"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Загрузка документов</h1>
+        <img src="/static/Logo.svg" alt="РЖД" />
+      </div>
+
+      <div class="upload-section">
+        <h2>Загрузите PDF документ</h2>
+        <form id="upload-form" enctype="multipart/form-data">
+          <input type="file" id="pdf-file" accept="application/pdf" required />
+          <button type="submit">Загрузить</button>
+        </form>
+        <div id="upload-status"></div>
+      </div>
+
+      <div class="documents-list">
+        <h2>Список загруженных документов</h2>
+        <table id="documents-table">
+          <thead>
+            <tr>
+              <th>ID документа</th>
+              <th>Название файла</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Список документов будет динамически добавляться здесь -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="navigation">
+        <a href="/">Назад к Чату</a>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("upload-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const fileInput = document.getElementById("pdf-file");
+          const file = fileInput.files[0];
+
+          if (!file) {
+            alert("Пожалуйста, выберите PDF файл для загрузки.");
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const uploadStatus = document.getElementById("upload-status");
+          uploadStatus.innerText = "Загрузка...";
+
+          fetch("/upload-pdf", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Ошибка сети: " + response.statusText);
+              }
+              return response.json();
+            })
+            .then((data) => {
+              uploadStatus.innerText = `Файл загружен: ${data.filename} (ID: ${data.file_id})`;
+              fileInput.value = ""; // Очистить поле выбора файла
+              fetchDocuments(); // Обновить список документов
+            })
+            .catch((error) => {
+              console.error("Ошибка при загрузке файла:", error);
+              uploadStatus.innerText = "Ошибка при загрузке файла.";
+            });
+        });
+
+      // Функция для получения списка документов
+      function fetchDocuments() {
+        fetch("/documents")
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Ошибка сети: " + response.statusText);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const tableBody = document
+              .getElementById("documents-table")
+              .getElementsByTagName("tbody")[0];
+            tableBody.innerHTML = ""; // Очистить текущий список
+
+            if (data.length === 0) {
+              const row = tableBody.insertRow();
+              const cell = row.insertCell(0);
+              cell.colSpan = 3;
+              cell.innerText = "Нет загруженных документов.";
+              cell.style.textAlign = "center";
+              return;
+            }
+
+            data.forEach((doc) => {
+              const row = tableBody.insertRow();
+
+              const cellId = row.insertCell(0);
+              cellId.innerText = doc.file_id;
+
+              const cellName = row.insertCell(1);
+              cellName.innerText = doc.filename;
+
+              const cellActions = row.insertCell(2);
+
+              // Добавим ссылку для скачивания файла
+              const downloadLink = document.createElement("a");
+              downloadLink.href = `/uploads/${doc.filename}`; // Убедитесь, что этот путь правильный
+              downloadLink.innerText = "Скачать";
+              downloadLink.target = "_blank";
+              cellActions.appendChild(downloadLink);
+
+              // Добавим кнопку для удаления файла
+              const deleteButton = document.createElement("button");
+              deleteButton.innerText = "Удалить";
+              deleteButton.addEventListener("click", () => {
+                deleteDocument(doc.file_id);
+              });
+              cellActions.appendChild(deleteButton);
+            });
+          })
+          .catch((error) => {
+            console.error("Ошибка при получении документов:", error);
+          });
+      }
+
+      // Функция для удаления документа
+      function deleteDocument(fileId) {
+        fetch(`/documents/${fileId}`, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Ошибка при удалении документа");
+            }
+            fetchDocuments(); // Обновить список после удаления
+          })
+          .catch((error) => {
+            console.error(error);
+            alert("Ошибка при удалении документа.");
+          });
+      }
+
+      // Первоначальный вызов для загрузки списка документов
+      fetchDocuments();
+    </script>
+  </body>
+</html>

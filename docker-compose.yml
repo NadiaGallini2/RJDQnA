@@ -1,0 +1,24 @@
+services:
+  bff:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/code/app
+      - ./static:/code/static
+      - ./templates:/code/templates
+
+  chromadb:
+    image: chromadb/chroma:0.5.11
+    ports:
+      - "9090:8080"  # Изменён внешний порт с 8080 на 9090, чтобы избежать конфликта
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+
+volumes:
+  chromadb_data:
